@@ -15,7 +15,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -100,8 +99,8 @@ public class MainActivity extends BaseNfcActivity {
         btRandom.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Integer i = (int) (10000000 + Math.random() * (99999999 - 10000000 + 1));
-                etData.setText(i.toString());
+                int i = (int) (10000000 + Math.random() * (99999999 - 10000000 + 1));
+                etData.setText(Integer.toString(i));
             }
         });
     }
@@ -136,7 +135,7 @@ public class MainActivity extends BaseNfcActivity {
 
                 //验证扇区密码，否则会报错（链接失败错误）
                 //这里验证的是密码A，如果想验证密码B也行，将方法中的A换成B就行
-                boolean isOpen = false;
+                boolean isOpen;
                 if (isKeyA) {
                     isOpen = mfc.authenticateSectorWithKeyA(sector, key);
                 } else {
@@ -161,7 +160,6 @@ public class MainActivity extends BaseNfcActivity {
                 }
             }
         }
-
         return data;
     }
 
@@ -197,7 +195,13 @@ public class MainActivity extends BaseNfcActivity {
                     }
                 }
 
-                boolean isOpen = mfc.authenticateSectorWithKeyA(sector, key);
+                boolean isOpen;
+                if (isKeyA) {
+                    isOpen = mfc.authenticateSectorWithKeyA(sector, key);
+                } else {
+                    isOpen = mfc.authenticateSectorWithKeyB(sector, key);
+                }
+
                 if (isOpen) {
                     int bIndex = mfc.sectorToBlock(sector);
                     //写卡
