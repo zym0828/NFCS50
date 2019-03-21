@@ -21,7 +21,6 @@ import java.util.Map;
 
 public class MainActivity extends BaseNfcActivity {
 
-
     private EditText etKey;
     private EditText etData;
     private Button btRandom;
