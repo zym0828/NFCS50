@@ -23,6 +23,7 @@ public class MainActivity extends BaseNfcActivity {
 
     private EditText etKey;
     private EditText etData;
+    private EditText etNewKey;
     private Button btRandom;
     private Button btIsRead;
 
@@ -55,6 +56,7 @@ public class MainActivity extends BaseNfcActivity {
 
         String keyStr = etKey.getText().toString();
         if (keyStr.length() != 12) {
+            Toast.makeText(this, "密钥为16个16进制数！", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -70,7 +72,17 @@ public class MainActivity extends BaseNfcActivity {
         }
 
         Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-        String resultStr = "id：" + byteToString(tag.getId()) + "\n扇区" + sector + "  块" + block + "\n原始数据：" + new String(readData);
+//        String resultStr = "id：" + byteToString(tag.getId()) + "\n扇区" + sector + "  块" + block + "\n原始数据：" + new String(readData);
+
+        String readStr = bytesToHexString(readData);
+        String resultStr = "id：" + bytesToHexString(tag.getId()) + "\n扇区" + sector + "  块" + block + "\n原始数据：" + readStr + "\n位数" + readStr.length() + "\nbyte位数" + readData.length;
+
+        String s = "";
+        for (byte b : readData) {
+            s = s + " " + b;
+        }
+        Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
+
 
         if (!isRead) {
             write(intent, sector, block, isKeyA, key, dataStr);
@@ -84,6 +96,7 @@ public class MainActivity extends BaseNfcActivity {
 
         etKey = findViewById(R.id.etKey);
         etData = findViewById(R.id.etData);
+        etNewKey = findViewById(R.id.etNewKey);
         btRandom = findViewById(R.id.btRandom);
 
         isRead = true;
@@ -95,7 +108,7 @@ public class MainActivity extends BaseNfcActivity {
         spSector.setSelection(8);
 
         spBlock = findViewById(R.id.spBlock);
-        String[] spBlockStr = new String[]{"0", "1", "2", "3"};
+        String[] spBlockStr = new String[]{"0", "1", "2"};
         spBlock.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, spBlockStr));
 
         spKey = findViewById(R.id.spKey);
@@ -226,11 +239,34 @@ public class MainActivity extends BaseNfcActivity {
 
                 if (isOpen) {
                     int bIndex = mfc.sectorToBlock(sector);
-                    //写卡
+
+                    //修改密码区
+                    String newKeyStr = etNewKey.getText().toString();
+                    if (newKeyStr.length() != 12) {
+                        Toast.makeText(this, "新密码错误！", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    byte[] newKey = new byte[6];
+                    for (int i = 0; i < 6; i++) {
+                        String s = newKeyStr.substring(i * 2, i * 2 + 2);
+                        newKey[i] = Integer.valueOf(s, 16).byteValue();
+                    }
+                    byte[] block3 = mfc.readBlock(bIndex + 3);
+                    if (isKeyA) {
+                        for (int i = 0; i < 6; i++) {
+                            block3[i] = newKey[i];
+                        }
+                    } else {
+                        for (int i = block3.length - 6; i < block3.length; i++) {
+                            block3[i] = newKey[i - block3.length + 6];
+                        }
+                    }
+                    mfc.writeBlock(bIndex + 3, block3);
+
                     mfc.writeBlock(bIndex + block, data);
                     Toast.makeText(this, "密码正确，写入成功！", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(this, "密码错误！", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "写入密码错误！", Toast.LENGTH_SHORT).show();
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -322,7 +358,7 @@ public class MainActivity extends BaseNfcActivity {
     /**
      * 将byte数组转化为字符串 * * @param src * @return
      */
-    public static String byteToString(byte[] src) {
+    private static String byteToString(byte[] src) {
         StringBuilder stringBuilder = new StringBuilder();
         if (src == null || src.length <= 0) {
             return null;
@@ -331,9 +367,60 @@ public class MainActivity extends BaseNfcActivity {
         for (int i = 0; i < src.length; i++) {
             buffer[0] = Character.forDigit((src[i] >>> 4) & 0x0F, 16);
             buffer[1] = Character.forDigit(src[i] & 0x0F, 16);
-            System.out.println(buffer);
             stringBuilder.append(buffer);
         }
         return stringBuilder.toString();
     }
+
+    /**
+     * 字符串转换成十六进制字符串
+     */
+    public static String str2HexStr(String str) {
+        char[] chars = "0123456789ABCDEF".toCharArray();
+        StringBuilder sb = new StringBuilder("");
+        byte[] bs = str.getBytes();
+        int bit;
+        for (int i = 0; i < bs.length; i++) {
+            bit = (bs[i] & 0x0f0) >> 4;
+            sb.append(chars[bit]);
+            bit = bs[i] & 0x0f;
+            sb.append(chars[bit]);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 把16进制字符串转换成字节数组
+     */
+    public static byte[] hexStringToByte(String hex) {
+        int len = (hex.length() / 2);
+        byte[] result = new byte[len];
+        char[] achar = hex.toCharArray();
+        for (int i = 0; i < len; i++) {
+            int pos = i * 2;
+            result[i] = (byte) (toByte(achar[pos]) << 4 | toByte(achar[pos + 1]));
+        }
+        return result;
+    }
+
+    private static int toByte(char c) {
+        byte b = (byte) "0123456789ABCDEF".indexOf(c);
+        return b;
+    }
+
+    /**
+     * 数组转换成十六进制字符串
+     */
+    public static final String bytesToHexString(byte[] bArray) {
+        StringBuffer sb = new StringBuffer(bArray.length);
+        String sTemp;
+        for (int i = 0; i < bArray.length; i++) {
+            sTemp = Integer.toHexString(0xFF & bArray[i]);
+            if (sTemp.length() < 2)
+                sb.append(0);
+            sb.append(sTemp.toUpperCase());
+        }
+        return sb.toString();
+    }
+
 }
