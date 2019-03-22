@@ -24,12 +24,14 @@ public class MainActivity extends BaseNfcActivity {
     private EditText etKey;
     private EditText etData;
     private Button btRandom;
+    private Button btIsRead;
 
     private Spinner spSector;
     private Spinner spBlock;
     private Spinner spKey;
     private TextView tvResult;
 
+    private Boolean isRead;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,10 +68,15 @@ public class MainActivity extends BaseNfcActivity {
         if (readData == null) {
             return;
         }
-        write(intent, sector, block, isKeyA, key, dataStr);
-        Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
 
-        String resultStr = "id：" + byteToString(tag.getId()) + "\n扇区" + sector + "  块" + block + "\n原始数据：" + new String(readData) + "\n写入数据：" + dataStr;
+        Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        String resultStr = "id：" + byteToString(tag.getId()) + "\n扇区" + sector + "  块" + block + "\n原始数据：" + new String(readData);
+
+        if (!isRead) {
+            write(intent, sector, block, isKeyA, key, dataStr);
+            resultStr = resultStr + "\n写入数据：" + dataStr;
+        }
+
         tvResult.setText(resultStr);
     }
 
@@ -78,6 +85,9 @@ public class MainActivity extends BaseNfcActivity {
         etKey = findViewById(R.id.etKey);
         etData = findViewById(R.id.etData);
         btRandom = findViewById(R.id.btRandom);
+
+        isRead = true;
+        btIsRead = findViewById(R.id.btIsRead);
 
         spSector = findViewById(R.id.spSector);
         String[] spSectorStr = new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"};
@@ -100,6 +110,19 @@ public class MainActivity extends BaseNfcActivity {
             public void onClick(View v) {
                 int i = (int) (10000000 + Math.random() * (99999999 - 10000000 + 1));
                 etData.setText(Integer.toString(i));
+            }
+        });
+
+        btIsRead.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isRead) {
+                    isRead = false;
+                    btIsRead.setText("写");
+                } else {
+                    isRead = true;
+                    btIsRead.setText("读");
+                }
             }
         });
     }
