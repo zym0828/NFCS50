@@ -1,5 +1,7 @@
 package com.example.nfcs50;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
@@ -10,6 +12,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,6 +34,9 @@ public class MainActivity extends BaseNfcActivity {
     private Spinner spBlock;
     private Spinner spKey;
     private TextView tvResult;
+
+    private LinearLayout llData;
+    private LinearLayout llKey;
 
     private Boolean isRead;
 
@@ -72,17 +78,15 @@ public class MainActivity extends BaseNfcActivity {
         }
 
         Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-//        String resultStr = "id：" + byteToString(tag.getId()) + "\n扇区" + sector + "  块" + block + "\n原始数据：" + new String(readData);
+        String readStr = new String(readData);
+        String resultStr = "id：" + byteToString(tag.getId()) + "\n扇区" + sector + "  块" + block + "\n原始数据：" + readStr;
+//        String resultStr = "id：" + bytesToHexString(tag.getId()) + "\n扇区" + sector + "  块" + block + "\n原始数据：" + readStr + "\n位数" + readStr.length() + "\nbyte位数" + readData.length;
 
-        String readStr = bytesToHexString(readData);
-        String resultStr = "id：" + bytesToHexString(tag.getId()) + "\n扇区" + sector + "  块" + block + "\n原始数据：" + readStr + "\n位数" + readStr.length() + "\nbyte位数" + readData.length;
-
-        String s = "";
-        for (byte b : readData) {
-            s = s + " " + b;
-        }
-        Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
-
+//        String s = "";
+//        for (byte b : readData) {
+//            s = s + " " + b;
+//        }
+//        Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
 
         if (!isRead) {
             write(intent, sector, block, isKeyA, key, dataStr);
@@ -98,6 +102,8 @@ public class MainActivity extends BaseNfcActivity {
         etData = findViewById(R.id.etData);
         etNewKey = findViewById(R.id.etNewKey);
         btRandom = findViewById(R.id.btRandom);
+        llData = findViewById(R.id.llData);
+        llKey = findViewById(R.id.llKey);
 
         isRead = true;
         btIsRead = findViewById(R.id.btIsRead);
@@ -130,11 +136,28 @@ public class MainActivity extends BaseNfcActivity {
             @Override
             public void onClick(View v) {
                 if (isRead) {
-                    isRead = false;
-                    btIsRead.setText("写");
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setTitle("警告");
+                    builder.setMessage("写入模式会同时修改数据和密码！\n是否进入？");
+                    builder.setPositiveButton("是", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            isRead = false;
+                            btIsRead.setText("写");
+                            llData.setVisibility(View.VISIBLE);
+                            llKey.setVisibility(View.VISIBLE);
+
+                        }
+                    });
+                    builder.setNegativeButton("否", null);
+                    builder.show();
+
                 } else {
                     isRead = true;
                     btIsRead.setText("读");
+                    llData.setVisibility(View.GONE);
+                    llKey.setVisibility(View.GONE);
+
                 }
             }
         });
