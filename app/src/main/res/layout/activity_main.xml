@@ -65,6 +65,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="2"
+            android:digits="0123456789ABCDEF"
             android:maxLength="12"
             android:text="FFFFFFFFFFFF" />
 
@@ -100,6 +101,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:digits="0123456789ABCDEF"
             android:maxLength="12"
             android:text="FFFFFFFFFFFF" />
 
@@ -121,6 +123,7 @@
         <EditText
             android:id="@+id/etData"
             android:layout_width="0dp"
+            android:digits="0123456789"
             android:layout_height="wrap_content"
             android:layout_weight="1" />
 
