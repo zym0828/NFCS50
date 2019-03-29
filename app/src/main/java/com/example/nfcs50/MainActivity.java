@@ -50,6 +50,10 @@ public class MainActivity extends BaseNfcActivity {
 
     @Override
     public void onNewIntent(Intent intent) {
+        Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        if (tag == null) {
+            return;
+        }
 
         Integer sector = spSector.getSelectedItemPosition();
         Integer block = spBlock.getSelectedItemPosition();
@@ -77,7 +81,6 @@ public class MainActivity extends BaseNfcActivity {
             return;
         }
 
-        Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
         String readStr = new String(readData);
         String resultStr = "id：" + byteToString(tag.getId()) + "\n扇区" + sector + "  块" + block + "\n原始数据：" + readStr;
 //        String resultStr = "id：" + bytesToHexString(tag.getId()) + "\n扇区" + sector + "  块" + block + "\n原始数据：" + readStr + "\n位数" + readStr.length() + "\nbyte位数" + readData.length;
