@@ -111,15 +111,18 @@ public class MainActivity extends BaseNfcActivity {
         isRead = true;
         btIsRead = findViewById(R.id.btIsRead);
 
+        //初始化区选择框
         spSector = findViewById(R.id.spSector);
         String[] spSectorStr = new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"};
         spSector.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, spSectorStr));
         spSector.setSelection(8);
 
+        //初始化块选择框
         spBlock = findViewById(R.id.spBlock);
         String[] spBlockStr = new String[]{"0", "1", "2"};
         spBlock.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, spBlockStr));
 
+        //初始化密钥选择框
         spKey = findViewById(R.id.spKey);
         String[] spKeyStr = new String[]{"A", "B"};
         spKey.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, spKeyStr));
