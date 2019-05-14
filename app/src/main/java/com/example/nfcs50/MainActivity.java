@@ -33,7 +33,7 @@ public class MainActivity extends BaseNfcActivity {
     private Spinner spSector;
     private Spinner spBlock;
     private Spinner spKey;
-    private TextView tvResult;
+    private TextView etResult;
 
     private LinearLayout llData;
     private LinearLayout llKey;
@@ -81,22 +81,15 @@ public class MainActivity extends BaseNfcActivity {
             return;
         }
 
-        String readStr = new String(readData);
+        String readStr = FormatUtil.bytesToHexString(readData);
         String resultStr = "id：" + byteToString(tag.getId()) + "\n扇区" + sector + "  块" + block + "\n原始数据：" + readStr;
-//        String resultStr = "id：" + bytesToHexString(tag.getId()) + "\n扇区" + sector + "  块" + block + "\n原始数据：" + readStr + "\n位数" + readStr.length() + "\nbyte位数" + readData.length;
-
-//        String s = "";
-//        for (byte b : readData) {
-//            s = s + " " + b;
-//        }
-//        Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
 
         if (!isRead) {
             write(intent, sector, block, isKeyA, key, dataStr);
             resultStr = resultStr + "\n写入数据：" + dataStr;
         }
 
-        tvResult.setText(resultStr);
+        etResult.setText(resultStr);
     }
 
     private void init() {
@@ -127,8 +120,8 @@ public class MainActivity extends BaseNfcActivity {
         String[] spKeyStr = new String[]{"A", "B"};
         spKey.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, spKeyStr));
 
-        tvResult = findViewById(R.id.tvResult);
-        tvResult.setMovementMethod(ScrollingMovementMethod.getInstance());
+        etResult = findViewById(R.id.etResult);
+        etResult.setMovementMethod(ScrollingMovementMethod.getInstance());
 
         btRandom.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -250,14 +243,8 @@ public class MainActivity extends BaseNfcActivity {
                     Toast.makeText(this, "失败！", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                //将字符转换为字节数组，这样其实并不好，无法转换汉字，因为汉字转出来要占三个字节
-                for (int i = 0; i < 16; i++) {
-                    if (i < dataStr.length()) {
-                        data[i] = (byte) dataStr.charAt(i);
-                    } else {
-                        data[i] = (byte) ' ';
-                    }
-                }
+
+                data = getDataByte(dataStr);
 
                 boolean isOpen;
                 if (isKeyA) {
@@ -311,78 +298,78 @@ public class MainActivity extends BaseNfcActivity {
         }
     }
 
-    private void readAll(Intent intent) {
-
-        //拿来装读取出来的数据，key代表扇区数，后面list存放四个块的内容
-        Map<String, List<String>> map = new HashMap<>();
-        //intent就是onNewIntent方法返回的那个intent
-        Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-        MifareClassic mfc = MifareClassic.get(tag);
-        //如果当前IC卡不是这个格式的mfc就会为空
-        if (null != mfc) {
-            try {
-                //链接NFC
-                mfc.connect();
-                //获取扇区数量
-                int count = mfc.getSectorCount();
-
-                //用于判断时候有内容读取出来
-                boolean flag = false;
-                for (int i = 0; i < count; i++) {
-                    //默认密码，如果是自己已知密码可以自己设置
-                    byte[] bytes = {(byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff};
-
-                    byte[] bytes2 = {(byte) 0x11, (byte) 0x11, (byte) 0x11, (byte) 0x11, (byte) 0x11, (byte) 0x11};
-
-                    //验证扇区密码，否则会报错（链接失败错误）
-                    //这里验证的是密码A，如果想验证密码B也行，将方法中的A换成B就行
-                    boolean isOpen = mfc.authenticateSectorWithKeyA(i, bytes2);
-                    if (isOpen) {
-                        //获取扇区里面块的数量
-                        int bCount = mfc.getBlockCountInSector(i);
-                        //获取扇区第一个块对应芯片存储器的位置
-                        //（我是这样理解的，因为第0扇区的这个值是4而不是0）
-                        int bIndex = mfc.sectorToBlock(i);
-                        for (int j = 0; j < bCount; j++) {
-                            //读取数据，这里是循环读取全部的数据
-                            //如果要读取特定扇区的特定块，将i，j换为固定值就行
-                            byte[] data = mfc.readBlock(bIndex + j);
-                        }
-                        flag = true;
-                    } else {
-                    }
-                }
-                if (flag) {
-                    //回调，因为我把方法抽出来了
-//                    callback.callBack(map);
-                    print(map);
-                } else {
-//                    callback.error();
-                }
-            } catch (Exception e) {
-//                callback.error();
-                e.printStackTrace();
-            } finally {
-                try {
-                    mfc.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    private void print(Map<String, List<String>> map) {
-//        StringBuilder sb = new StringBuilder();
-        for (String key : map.keySet()) {
-            List<String> list = map.get(key);
-            for (String s : list) {
-//                sb.append(s);
-            }
-        }
-//        tvResult.setText(sb.toString());
-//        Toast.makeText(this, sb.toString(), Toast.LENGTH_SHORT).show();
-    }
+//    private void readAll(Intent intent) {
+//
+//        //拿来装读取出来的数据，key代表扇区数，后面list存放四个块的内容
+//        Map<String, List<String>> map = new HashMap<>();
+//        //intent就是onNewIntent方法返回的那个intent
+//        Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+//        MifareClassic mfc = MifareClassic.get(tag);
+//        //如果当前IC卡不是这个格式的mfc就会为空
+//        if (null != mfc) {
+//            try {
+//                //链接NFC
+//                mfc.connect();
+//                //获取扇区数量
+//                int count = mfc.getSectorCount();
+//
+//                //用于判断时候有内容读取出来
+//                boolean flag = false;
+//                for (int i = 0; i < count; i++) {
+//                    //默认密码，如果是自己已知密码可以自己设置
+//                    byte[] bytes = {(byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff};
+//
+//                    byte[] bytes2 = {(byte) 0x11, (byte) 0x11, (byte) 0x11, (byte) 0x11, (byte) 0x11, (byte) 0x11};
+//
+//                    //验证扇区密码，否则会报错（链接失败错误）
+//                    //这里验证的是密码A，如果想验证密码B也行，将方法中的A换成B就行
+//                    boolean isOpen = mfc.authenticateSectorWithKeyA(i, bytes2);
+//                    if (isOpen) {
+//                        //获取扇区里面块的数量
+//                        int bCount = mfc.getBlockCountInSector(i);
+//                        //获取扇区第一个块对应芯片存储器的位置
+//                        //（我是这样理解的，因为第0扇区的这个值是4而不是0）
+//                        int bIndex = mfc.sectorToBlock(i);
+//                        for (int j = 0; j < bCount; j++) {
+//                            //读取数据，这里是循环读取全部的数据
+//                            //如果要读取特定扇区的特定块，将i，j换为固定值就行
+//                            byte[] data = mfc.readBlock(bIndex + j);
+//                        }
+//                        flag = true;
+//                    } else {
+//                    }
+//                }
+//                if (flag) {
+//                    //回调，因为我把方法抽出来了
+////                    callback.callBack(map);
+//                    print(map);
+//                } else {
+////                    callback.error();
+//                }
+//            } catch (Exception e) {
+////                callback.error();
+//                e.printStackTrace();
+//            } finally {
+//                try {
+//                    mfc.close();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
+//    }
+//
+//    private void print(Map<String, List<String>> map) {
+////        StringBuilder sb = new StringBuilder();
+//        for (String key : map.keySet()) {
+//            List<String> list = map.get(key);
+//            for (String s : list) {
+////                sb.append(s);
+//            }
+//        }
+////        tvResult.setText(sb.toString());
+////        Toast.makeText(this, sb.toString(), Toast.LENGTH_SHORT).show();
+//    }
 
     /**
      * 将byte数组转化为字符串 * * @param src * @return
@@ -399,6 +386,27 @@ public class MainActivity extends BaseNfcActivity {
             stringBuilder.append(buffer);
         }
         return stringBuilder.toString();
+    }
+
+    //data字符串转换成byte
+    private byte[] getDataByte(String dataStr) {
+
+        if (dataStr.length() < 32) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(dataStr);
+            for (int i = 0; i < 32 - dataStr.length(); i++) {
+                sb.append("0");
+            }
+            dataStr = sb.toString();
+        }
+
+        byte[] key = new byte[16];
+        for (int i = 0; i < 16; i++) {
+            String s = dataStr.substring(i * 2, i * 2 + 2);
+            key[i] = Integer.valueOf(s, 16).byteValue();
+        }
+
+        return key;
     }
 
     /**

@@ -65,7 +65,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="2"
-            android:digits="0123456789ABCDEF"
+            android:digits="0123456789ABCDEFabcdef"
             android:maxLength="12"
             android:text="FFFFFFFFFFFF" />
 
@@ -101,7 +101,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:digits="0123456789ABCDEF"
+            android:digits="0123456789ABCDEFabcdef"
             android:maxLength="12"
             android:text="FFFFFFFFFFFF" />
 
@@ -123,9 +123,10 @@
         <EditText
             android:id="@+id/etData"
             android:layout_width="0dp"
-            android:digits="0123456789"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:digits="0123456789ABCDEFabcdef"
+            android:maxLength="32" />
 
         <Button
             android:id="@+id/btRandom"
@@ -140,8 +141,8 @@
         android:layout_height="wrap_content"
         android:text="读" />
 
-    <TextView
-        android:id="@+id/tvResult"
+    <EditText
+        android:id="@+id/etResult"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#eeeeee"
