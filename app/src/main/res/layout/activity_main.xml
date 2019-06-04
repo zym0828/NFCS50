@@ -21,7 +21,7 @@
         android:orientation="horizontal">
 
         <TextView
-            android:layout_width="50dp"
+            android:layout_width="70dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
@@ -34,7 +34,7 @@
             android:layout_weight="2" />
 
         <TextView
-            android:layout_width="50dp"
+            android:layout_width="70dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
@@ -55,10 +55,11 @@
         android:orientation="horizontal">
 
         <TextView
-            android:layout_width="50dp"
+            android:layout_width="70dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:gravity="center"
-            android:text="原密码" />
+            android:text="密码" />
 
         <EditText
             android:id="@+id/etKey"
@@ -69,9 +70,11 @@
             android:maxLength="12"
             android:text="FFFFFFFFFFFF" />
 
+
         <TextView
-            android:layout_width="50dp"
+            android:layout_width="70dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:gravity="center"
             android:text="密区" />
 
@@ -84,6 +87,26 @@
     </LinearLayout>
 
     <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="破解密码" />
+
+        <CheckBox
+            android:id="@+id/cbIsCrack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/llKey"
         android:layout_width="match_parent"
         android:layout_height="50dp"
@@ -91,10 +114,11 @@
         android:visibility="gone">
 
         <TextView
-            android:layout_width="50dp"
+            android:layout_width="70dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:gravity="center"
-            android:text="新密码" />
+            android:text="修改密码" />
 
         <EditText
             android:id="@+id/etNewKey"
@@ -115,8 +139,9 @@
         android:visibility="gone">
 
         <TextView
-            android:layout_width="50dp"
+            android:layout_width="70dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:gravity="center"
             android:text="数据" />
 
@@ -133,6 +158,7 @@
             android:layout_width="80dp"
             android:layout_height="wrap_content"
             android:text="随机" />
+
     </LinearLayout>
 
     <Button

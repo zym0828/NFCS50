@@ -11,6 +11,7 @@ import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
@@ -18,9 +19,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class MainActivity extends BaseNfcActivity {
 
@@ -34,6 +32,8 @@ public class MainActivity extends BaseNfcActivity {
     private Spinner spBlock;
     private Spinner spKey;
     private TextView etResult;
+
+    private CheckBox cbIsCrack;
 
     private LinearLayout llData;
     private LinearLayout llKey;
@@ -76,6 +76,15 @@ public class MainActivity extends BaseNfcActivity {
             key[i] = Integer.valueOf(s, 16).byteValue();
         }
 
+        if (cbIsCrack.isChecked()) {
+            String crackPasswordStr = crackPassword(intent, sector, block, isKeyA);
+            if (crackPasswordStr == null) {
+                return;
+            }
+            etResult.setText(crackPasswordStr);
+            return;
+        }
+
         byte[] readData = read(intent, sector, block, isKeyA, key);
         if (readData == null) {
             return;
@@ -98,6 +107,8 @@ public class MainActivity extends BaseNfcActivity {
         etData = findViewById(R.id.etData);
         etNewKey = findViewById(R.id.etNewKey);
         btRandom = findViewById(R.id.btRandom);
+        cbIsCrack = findViewById(R.id.cbIsCrack);
+
         llData = findViewById(R.id.llData);
         llKey = findViewById(R.id.llKey);
 
@@ -221,7 +232,6 @@ public class MainActivity extends BaseNfcActivity {
     }
 
     private void write(Intent intent, Integer sector, Integer block, Boolean isKeyA, byte[] key, String dataStr) {
-
         Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
         MifareClassic mfc = MifareClassic.get(tag);
         byte[] data = new byte[16];
@@ -297,6 +307,104 @@ public class MainActivity extends BaseNfcActivity {
             }
         }
     }
+
+    private String crackPassword(Intent intent, Integer sector, Integer block, Boolean isKeyA) {
+
+        byte[] data = null;
+
+        //intent就是onNewIntent方法返回的那个intent
+        Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        MifareClassic mfc = MifareClassic.get(tag);
+        //如果当前IC卡不是这个格式的mfc就会为空
+        if (null != mfc) {
+            try {
+                //链接NFC
+                mfc.connect();
+                //获取扇区数量
+                int count = mfc.getSectorCount();
+
+                //如果传进来的扇区大了或者小了直接退出方法
+                if (sector > count - 1 || sector < 0) {
+                    Toast.makeText(this, "扇区数值错误！", Toast.LENGTH_SHORT).show();
+                    return null;
+                }
+                //获取写的扇区的块的数量
+                int bCount = mfc.getBlockCountInSector(sector);
+                //如果输入的块大了或者小了也是直接退出
+                if (block > bCount - 1 || block < 0) {
+                    Toast.makeText(this, "块数值错误！", Toast.LENGTH_SHORT).show();
+                    return null;
+                }
+
+                //验证扇区密码，否则会报错（链接失败错误）
+                //这里验证的是密码A，如果想验证密码B也行，将方法中的A换成B就行
+                boolean isOpen;
+                if (isKeyA) {
+                    for (long i = 0; i < 281474976710655L; i++) {
+                        String keyStr = Long.toHexString(i);
+
+                        if (keyStr.length() < 12) {
+                            StringBuilder sb = new StringBuilder();
+                            int num = 12 - keyStr.length();
+                            for (int j = 0; j < num; j++) {
+                                sb.append("0");
+                            }
+                            sb.append(keyStr);
+                            keyStr = sb.toString();
+                        }
+
+                        byte[] key = new byte[6];
+                        for (int j = 0; j < 6; j++) {
+                            String s = keyStr.substring(j * 2, j * 2 + 2);
+                            key[j] = Integer.valueOf(s, 16).byteValue();
+                        }
+
+                        isOpen = mfc.authenticateSectorWithKeyA(sector, key);
+                        if (isOpen) {
+                            return keyStr;
+                        }
+                    }
+
+                } else {
+                    for (long i = 0; i < 281474976710655L; i++) {
+                        String keyStr = Long.toHexString(i);
+
+                        if (keyStr.length() < 12) {
+                            StringBuilder sb = new StringBuilder();
+                            int num = 12 - keyStr.length();
+                            for (int j = 0; j < num; j++) {
+                                sb.append("0");
+                            }
+                            sb.append(keyStr);
+                            keyStr = sb.toString();
+                        }
+
+                        byte[] key = new byte[6];
+                        for (int j = 0; j < 6; j++) {
+                            String s = keyStr.substring(j * 2, j * 2 + 2);
+                            key[j] = Integer.valueOf(s, 16).byteValue();
+                        }
+
+                        isOpen = mfc.authenticateSectorWithKeyB(sector, key);
+                        if (isOpen) {
+                            return keyStr;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                Toast.makeText(this, "读取错误！", Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+            } finally {
+                try {
+                    mfc.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return null;
+    }
+
 
 //    private void readAll(Intent intent) {
 //
