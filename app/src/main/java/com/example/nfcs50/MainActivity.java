@@ -180,6 +180,7 @@ public class MainActivity extends BaseNfcActivity {
         //intent就是onNewIntent方法返回的那个intent
         Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
         MifareClassic mfc = MifareClassic.get(tag);
+
         //如果当前IC卡不是这个格式的mfc就会为空
         if (null != mfc) {
             try {
@@ -187,7 +188,6 @@ public class MainActivity extends BaseNfcActivity {
                 mfc.connect();
                 //获取扇区数量
                 int count = mfc.getSectorCount();
-
                 //如果传进来的扇区大了或者小了直接退出方法
                 if (sector > count - 1 || sector < 0) {
                     Toast.makeText(this, "扇区数值错误！", Toast.LENGTH_SHORT).show();
@@ -200,7 +200,6 @@ public class MainActivity extends BaseNfcActivity {
                     Toast.makeText(this, "块数值错误！", Toast.LENGTH_SHORT).show();
                     return null;
                 }
-
                 //验证扇区密码，否则会报错（链接失败错误）
                 //这里验证的是密码A，如果想验证密码B也行，将方法中的A换成B就行
                 boolean isOpen;
@@ -211,7 +210,6 @@ public class MainActivity extends BaseNfcActivity {
                 }
                 if (isOpen) {
                     //获取扇区第一个块对应芯片存储器的位置
-                    //（我是这样理解的，因为第0扇区的这个值是4而不是0）
                     int bIndex = mfc.sectorToBlock(sector);
                     data = mfc.readBlock(bIndex + block);
                 } else {
