@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.MifareClassic;
+import android.nfc.tech.MifareUltralight;
+import android.nfc.tech.NfcA;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
@@ -179,11 +181,84 @@ public class MainActivity extends BaseNfcActivity {
 
         //intent就是onNewIntent方法返回的那个intent
         Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+
         MifareClassic mfc = MifareClassic.get(tag);
 
+        NfcA nfcA = NfcA.get(tag);
+        MifareUltralight mu = MifareUltralight.get(tag);
+
         //如果当前IC卡不是这个格式的mfc就会为空
-        if (null != mfc) {
+        if (null != nfcA) {
             try {
+                nfcA.connect();
+
+                //修改为密码不可见1
+                byte[] write1 = {
+                        (byte) 0xA2,
+                        (byte) 0x11,
+                        (byte) 0x80,
+                        (byte) 0x05,
+                        (byte) 0x00,
+                        (byte) 0x00
+                };
+
+                //修改为密码不可见2
+                byte[] write2 = {
+                        (byte) 0xA2,
+                        (byte) 0x10,
+                        (byte) 0x00,
+                        (byte) 0x00,
+                        (byte) 0x00,
+                        (byte) 0x03
+                };
+
+                //修改第12页的密码
+                byte[] write3 = {
+                        (byte) 0xA2,
+                        (byte) 0x12,
+                        (byte) 0x12,
+                        (byte) 0x34,
+                        (byte) 0x56,
+                        (byte) 0x78
+                };
+
+                //验证的密码
+                byte[] PwdAuth = {
+                        (byte) 0x1B,
+                        (byte) 0x12,
+                        (byte) 0x34,
+                        (byte) 0x56,
+                        (byte) 0x78
+                };
+
+                //读第8页的数据
+                byte[] readPage = {
+                        (byte) 0x30,
+                        (byte) 0x08
+                };
+
+                //写第8页的数据
+                byte[] write4 = {
+                        (byte) 0xA2,
+                        (byte) 0x08,
+                        (byte) 0x11,
+                        (byte) 0x11,
+                        (byte) 0x11,
+                        (byte) 0x11
+                };
+
+                byte[] response1 = nfcA.transceive(hexStringToBytes("1B12345678"));
+                byte[] response2 = nfcA.transceive(readPage);
+//                byte[] response3 = nfcA.transceive(write1);
+//                byte[] response4 = nfcA.transceive(write2);
+//                byte[] response5 = nfcA.transceive(write3);
+//                byte[] response6 = nfcA.transceive(write4);
+
+                Toast.makeText(this, "返回：" + bytesToHexString(response2), Toast.LENGTH_SHORT).show();
+                if (1 == 1) {
+                    return response2;
+                }
+
                 //链接NFC
                 mfc.connect();
                 //获取扇区数量
@@ -220,13 +295,32 @@ public class MainActivity extends BaseNfcActivity {
                 e.printStackTrace();
             } finally {
                 try {
-                    mfc.close();
+                    nfcA.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }
         return data;
+    }
+
+    public byte[] hexStringToBytes(String hexString) {
+        if (hexString == null || hexString.equals("")) {
+            return null;
+        }
+        hexString = hexString.toUpperCase();
+        int length = hexString.length() / 2;
+        char[] hexChars = hexString.toCharArray();
+        byte[] d = new byte[length];
+        for (int i = 0; i < length; i++) {
+            int pos = i * 2;
+            d[i] = (byte) (charToByte(hexChars[pos]) << 4 | charToByte(hexChars[pos + 1]));
+        }
+        return d;
+    }
+
+    private byte charToByte(char c) {
+        return (byte) "0123456789ABCDEF".indexOf(c);
     }
 
     private void write(Intent intent, Integer sector, Integer block, Boolean isKeyA, byte[] key, String dataStr) {
