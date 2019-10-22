@@ -3,7 +3,7 @@ package com.example.nfcs50;
 public class FormatUtil {
 
     //将byte数组转化为字符串
-    private static String byteToString(byte[] src) {
+    public static String byteToString(byte[] src) {
         StringBuilder stringBuilder = new StringBuilder();
         if (src == null || src.length <= 0) {
             return null;
@@ -60,5 +60,26 @@ public class FormatUtil {
             sb.append(sTemp.toUpperCase());
         }
         return sb.toString();
+    }
+
+    //data字符串转换成byte
+    public static byte[] getDataByte(String dataStr) {
+
+        if (dataStr.length() < 32) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(dataStr);
+            for (int i = 0; i < 32 - dataStr.length(); i++) {
+                sb.append("0");
+            }
+            dataStr = sb.toString();
+        }
+
+        byte[] key = new byte[16];
+        for (int i = 0; i < 16; i++) {
+            String s = dataStr.substring(i * 2, i * 2 + 2);
+            key[i] = Integer.valueOf(s, 16).byteValue();
+        }
+
+        return key;
     }
 }

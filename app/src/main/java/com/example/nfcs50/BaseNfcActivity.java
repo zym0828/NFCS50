@@ -13,7 +13,6 @@ import android.support.v7.app.AppCompatActivity;
  * 所以我们获取intent传递过来的Tag数据操作放在onNewIntent方法中执行
  * 如果在栈中已经有该Activity的实例，就重用该实例(会调用实例的onNewIntent())
  * 只要NFC标签靠近就执行
- * Created by gc on 2016/12/8.
  */
 public class BaseNfcActivity extends AppCompatActivity {
     private NfcAdapter mNfcAdapter;
