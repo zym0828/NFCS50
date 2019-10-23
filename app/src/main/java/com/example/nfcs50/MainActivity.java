@@ -78,8 +78,8 @@ public class MainActivity extends BaseNfcActivity {
             return;
         }
 
-        String readStr = FormatUtil.bytesToHexString(readData);
-        String resultStr = "id：" + FormatUtil.byteToString(tag.getId()) + "\n扇区" + sector + "  块" + block + "\n原始数据：" + readStr;
+        String readStr = FormatUtil.byteToHexString(readData);
+        String resultStr = "id：" + FormatUtil.byteToHexString(tag.getId()) + "\n扇区" + sector + "  块" + block + "\n原始数据：" + readStr;
 
         if (!isRead) {
             write(intent, sector, block, isKeyA, key, dataStr);

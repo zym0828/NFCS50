@@ -2,37 +2,20 @@ package com.example.nfcs50;
 
 public class FormatUtil {
 
-    //将byte数组转化为字符串
-    public static String byteToString(byte[] src) {
-        StringBuilder stringBuilder = new StringBuilder();
-        if (src == null || src.length <= 0) {
-            return null;
-        }
-        char[] buffer = new char[2];
-        for (int i = 0; i < src.length; i++) {
-            buffer[0] = Character.forDigit((src[i] >>> 4) & 0x0F, 16);
-            buffer[1] = Character.forDigit(src[i] & 0x0F, 16);
-            stringBuilder.append(buffer);
-        }
-        return stringBuilder.toString();
-    }
-
-    //字符串转换成十六进制字符串
-    public static String str2HexStr(String str) {
-        char[] chars = "0123456789ABCDEF".toCharArray();
-        StringBuilder sb = new StringBuilder("");
-        byte[] bs = str.getBytes();
-        int bit;
-        for (int i = 0; i < bs.length; i++) {
-            bit = (bs[i] & 0x0f0) >> 4;
-            sb.append(chars[bit]);
-            bit = bs[i] & 0x0f;
-            sb.append(chars[bit]);
+    //byte[]转hexString
+    public static final String byteToHexString(byte[] bArray) {
+        StringBuilder sb = new StringBuilder(bArray.length);
+        String sTemp;
+        for (int i = 0; i < bArray.length; i++) {
+            sTemp = Integer.toHexString(0xFF & bArray[i]);
+            if (sTemp.length() < 2)
+                sb.append(0);
+            sb.append(sTemp.toUpperCase());
         }
         return sb.toString();
     }
 
-    //16进制字符串转byte[]
+    //hexString转byte[]
     public static byte[] hexStringToByte(String hex) {
         int len = (hex.length() / 2);
         byte[] result = new byte[len];
@@ -49,20 +32,7 @@ public class FormatUtil {
         return b;
     }
 
-    //byte[]转16进制字符串
-    public static final String bytesToHexString(byte[] bArray) {
-        StringBuffer sb = new StringBuffer(bArray.length);
-        String sTemp;
-        for (int i = 0; i < bArray.length; i++) {
-            sTemp = Integer.toHexString(0xFF & bArray[i]);
-            if (sTemp.length() < 2)
-                sb.append(0);
-            sb.append(sTemp.toUpperCase());
-        }
-        return sb.toString();
-    }
-
-    //data字符串转换成byte
+    //data字符串转换成byte，长度不足32的补零
     public static byte[] getDataByte(String dataStr) {
 
         if (dataStr.length() < 32) {
@@ -73,13 +43,11 @@ public class FormatUtil {
             }
             dataStr = sb.toString();
         }
-
         byte[] key = new byte[16];
         for (int i = 0; i < 16; i++) {
             String s = dataStr.substring(i * 2, i * 2 + 2);
             key[i] = Integer.valueOf(s, 16).byteValue();
         }
-
         return key;
     }
 }
