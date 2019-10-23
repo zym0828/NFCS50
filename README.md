@@ -1,11 +1,13 @@
 # NFCS50
 
-这个程序主要是基于NFC S50/F08卡开发的，专门读写S50/F08，当然其他MifareClassic系列卡也可以参考这个程序进行开发。
+公司是专门做NFC/RFID的，前不久要用S50卡开发一个应用，一开始对这款型号的卡不是很熟悉，就在网上搜集了资料，再针对这款芯片开发了一个小Demo。话不多说，先看图吧。
+![](https://user-gold-cdn.xitu.io/2019/10/23/16df674ad2a0c9ac?w=1080&h=2280&f=jpeg&s=177160)
+![](https://user-gold-cdn.xitu.io/2019/10/23/16df674fadebf9d3?w=1080&h=2280&f=jpeg&s=219708)
+S50（F08是国产卡，使用起来跟S50基本相同）是MifareClassic系列的卡，所以可以直接调用安卓官方的SDK。
 
-![image](https://user-gold-cdn.xitu.io/2019/10/23/16df674ad2a0c9ac?imageView2/0/w/1280/h/960/ignore-error/1)
 
 读数据：
-
+```
     private byte[] read(Intent intent, Integer sector, Integer block, Boolean isKeyA, byte[] key) {
 
         byte[] data = null;
@@ -62,9 +64,10 @@
         }
         return data;
     }
+```
 
 写数据：
-
+```
     private void write(Intent intent, Integer sector, Integer block, Boolean isKeyA, byte[] key, String dataStr) {
         Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
         MifareClassic mfc = MifareClassic.get(tag);
@@ -142,5 +145,9 @@
             }
         }
     }
+```
+google developer：[NFC MifareClassic Android 文档](https://developer.android.google.cn/reference/kotlin/android/nfc/tech/MifareClassic)。
 
-掘金链接：https://juejin.im/post/5dafba476fb9a04ddb3b8bde
+github：[NFCS50](https://github.com/zym0828/NFCS50)。
+
+掘金：[Android NFC——分享一个使用安卓手机读写S50/F08芯片的程序](https://juejin.im/post/5dafba476fb9a04ddb3b8bde)。
